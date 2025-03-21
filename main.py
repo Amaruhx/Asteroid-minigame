@@ -20,11 +20,6 @@ def main():
                 return
         screen.fill(BLACK)
         pygame.display.flip()
-        
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                return
     #Quit the game when the user closes the window
     pygame.quit()
     
