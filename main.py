@@ -1,46 +1,63 @@
-# this allows us to use code from
-# the open-source pygame library
-# throughout this file
+import sys
 import pygame
 from constants import *
-import player
+from player import Player
+from asteroid import Asteroid
+from asteroidfield import AsteroidField
+from shot import Shot
 
-
-# Define the RGB color for black
-BLACK = (0, 0, 0)
 def main():
-    print("Starting Asteroids!")
-    print("Screen width:",SCREEN_WIDTH)
-    print("Screen height:",SCREEN_HEIGHT)
-    
-    # Initialize the game 
     pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH,SCREEN_HEIGHT))
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     clock = pygame.time.Clock()
+
+    updatable = pygame.sprite.Group()
+    drawable = pygame.sprite.Group()
+    asteroids = pygame.sprite.Group()
+    shots = pygame.sprite.Group()
+    
+    # Set the containers for each class
+    Asteroid.containers = (asteroids, updatable, drawable)
+    AsteroidField.containers = updatable
+    Shot.containers = (shots, updatable, drawable)
+    asteroid_field = AsteroidField()
+
+    # Set the containers for the player class
+    Player.containers = (updatable, drawable)
+
+    # Create the player object
+    player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
+
     dt = 0
-   
-    # Create a player object
-    player_instance = player.Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
-   
-   # Game loop
+
+    # Main game loop
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
-        screen.fill(BLACK)
-        
-        # Call the draw method on the player instance
-        player_instance.draw(screen)
-        
+
+        updatable.update(dt)
+        # Check for collisions between the player and asteroids
+        for asteroid in asteroids:
+            if asteroid.checkCollision(player):
+                print("Game over!")
+                sys.exit()
+            
+            for shot in shots:
+                if asteroid.checkCollision(shot):
+                    shot.kill()
+                    asteroid.split()
+
+        screen.fill("black")
+
+        for obj in drawable:
+            obj.draw(screen)
+
         pygame.display.flip()
-        clock.tick(60)
-        
+
         # limit the framerate to 60 FPS
         dt = clock.tick(60) / 1000
-    
-    #Quit the game when the user closes the window
-    pygame.quit()
-    
+
 
 if __name__ == "__main__":
     main()
